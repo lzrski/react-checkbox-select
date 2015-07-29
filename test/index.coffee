@@ -22,10 +22,12 @@ describe "CheckboxSelect component", ->
     global.navigator  = userAgent: "node.js"
 
   it "is a react component", ->
-    expect CheckboxSelect
-      .to.have.property 'prototype',  React.Component
+    # ReactComponents can be instantiated with new keyword for test purposes
+    # See https://facebook.github.io/react/docs/glossary.html#react-components
+    expect (TestUtils.isCompositeComponent new CheckboxSelect)
+      .to.be.ok
 
-  it "has a name of CheckboxSelect", ->
+  it "has a name CheckboxSelect", ->
     expect CheckboxSelect
       .to.have.property 'name',       'CheckboxSelect'
 
