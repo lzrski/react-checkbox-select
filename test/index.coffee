@@ -25,10 +25,9 @@ describe "CheckboxSelect component", ->
     expect CheckboxSelect
       .to.have.property 'prototype',  React.Component
 
-  it "has a name CheckboxSelect", ->
+  it "has a name of CheckboxSelect", ->
     expect CheckboxSelect
-      .to.have.property 'constructor'
-      .with.property    'name',       'CheckboxSelect'
+      .to.have.property 'name',       'CheckboxSelect'
 
   it "can be instantiated empty", ->
     TestUtils.renderIntoDocument <CheckboxSelect />
