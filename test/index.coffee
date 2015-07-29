@@ -21,53 +21,207 @@ describe "CheckboxSelect component", ->
     global.window     = document.defaultView
     global.navigator  = userAgent: "node.js"
 
-  it "is a react component"
+  it "is a react component", ->
+    expect CheckboxSelect
+      .to.have.property 'prototype',  React.Component
 
-  it "has a name CheckboxSelect"
+  it "has a name CheckboxSelect", ->
+    expect CheckboxSelect
+      .to.have.property 'constructor'
+      .with.property    'name',       'CheckboxSelect'
 
-  it "can be instantiated empty"
+  it "can be instantiated empty", ->
+    TestUtils.renderIntoDocument <CheckboxSelect />
+    # There should be no error
 
-  it "can be instantiated with checkboxes as children"
+  it "can be instantiated with checkboxes as children", ->
+    TestUtils.renderIntoDocument <CheckboxSelect>
+      <input type = 'checkbox' value = 'x'/>
+      <input type = 'checkbox' value = 'y'/>
+      <input type = 'checkbox' value = 'z'/>
+    </CheckboxSelect>
+    # There should be no error
 
-  it "can be instantiated with other children as well"
+  it "can be instantiated with other children as well", ->
+    TestUtils.renderIntoDocument <CheckboxSelect>
+      <input type = 'checkbox' value = 'x' id = 'x'/>
+      <label htmlFor = 'x'>Ex</label>
 
-  it "can be instantiated with checkboxes nested in other children"
+      <input type = 'checkbox' value = 'y' id = 'y'/>
+      <label htmlFor = 'y'>Why</label>
 
-  it "has a value property reflecting checkboxes state"
+      <input type = 'checkbox' value = 'z' id = 'z'/>
+      <label htmlFor = 'z'>Zee</label>
+    </CheckboxSelect>
+    # There should be no error
+
+  it "can be instantiated with checkboxes nested in other children", ->
+    TestUtils.renderIntoDocument <CheckboxSelect>
+      <div>
+        <input type = 'checkbox' value = 'x' id = 'x'/>
+        <label htmlFor = 'x'>Ex</label>
+      </div>
+
+      <div>
+        <input type = 'checkbox' value = 'y' id = 'y'/>
+        <label htmlFor = 'y'>Why</label>
+      </div>
+
+      <div>
+        <input type = 'checkbox' value = 'z' id = 'z'/>
+        <label htmlFor = 'z'>Zee</label>
+      </div>
+    </CheckboxSelect>
+    # There should be no error
+
+  it "has a value property reflecting checkboxes state", ->
+    component = TestUtils.renderIntoDocument <CheckboxSelect>
+      <div>
+        <input
+          type    = 'checkbox'
+          value   = 'x'
+          id      = 'x'
+          checked = { yes }
+        />
+        <label htmlFor = 'x'>Ex</label>
+      </div>
+
+      <div>
+        <input
+          type    = 'checkbox'
+          value   = 'y'
+          id      = 'y'
+          checked = { no }
+        />
+        <label htmlFor = 'y'>Why</label>
+      </div>
+
+      <div>
+        <input
+          type    = 'checkbox'
+          value   = 'z'
+          id      = 'z'
+          checked = { yes }
+        />
+        <label htmlFor = 'z'>Zee</label>
+      </div>
+    </CheckboxSelect>
+
+    expect component
+      .to.have.property       'value'
+      .which.is.an.instanceOf Array
+      .and.eql                ['x', 'z']
 
   describe "onSelect method", ->
 
-    it "can be provided via props"
+    it "can be provided via props", ->
+      callback  = -> # Empty function
+      component = TestUtils.renderIntoDocument <CheckboxSelect onChange = { callback }>
+        <input type = 'checkbox' value = 'x'/>
+        <input type = 'checkbox' value = 'y'/>
+        <input type = 'checkbox' value = 'z'/>
+      </CheckboxSelect>
+      expect component
+        .to.have.property 'props'
+        .which.is.an      'object'
+        .with.property    'onChange',   callback
 
-    it "is called once for each checkbox change"
+    it "is called once for each checkbox change", ->
+      callback = sinon.spy()
 
-    it "does not supress childrens onChange event"
+      component = TestUtils.renderIntoDocument <CheckboxSelect
+        onChange = { callbacks.component }
+      >
+        <input type = 'checkbox' value = 'x' ref = 'x'/>
+        <input type = 'checkbox' value = 'y' ref = 'y'/>
+        <input type = 'checkbox' value = 'z' ref = 'z'/>
+      </CheckboxSelect>
 
-    it "is gets event object passed as an argument"
+      TestUtils.Simulate.click React.findDOMNode component.refs.y
+
+      expect callback
+        .to.have.been.calledOnce
+
+    it "does not supress childrens onChange event", ->
+      callbacks  =
+        component : sinon.spy()
+        input     : sinon.spy()
+
+      component = TestUtils.renderIntoDocument <CheckboxSelect
+        onChange = { callbacks.component }
+      >
+        <input type = 'checkbox' value = 'x' ref = 'x'/>
+        <input type = 'checkbox' value = 'y' ref = 'y'/>
+        <input
+          type      = 'checkbox'
+          value     = 'z'
+          ref       = 'z'
+          onChange  = { callbacks.input }
+        />
+      </CheckboxSelect>
+
+      TestUtils.Simulate.click React.findDOMNode component.refs.y
+
+      expect callbacks.component
+        .to.have.been.calledOnce
+
+      expect callbacks.input
+        .to.have.been.calledOnce
+        .and
+        .to.have.been.calledBefore callbacks.component
+
+    it "gets event object passed as an argument", ->
+      callback = sinon.spy()
+
+      component = TestUtils.renderIntoDocument <CheckboxSelect
+        onChange = { callback }
+      >
+        <input type = 'checkbox' value = 'x' ref = 'x'/>
+        <input type = 'checkbox' value = 'y' ref = 'y'/>
+        <input type = 'checkbox' value = 'z' ref = 'z'/>
+      </CheckboxSelect>
+
+      TestUtils.Simulate.click React.findDOMNode component.refs.y
+
+      expect callback
+        .to.have.been.calledWithMatch (args) ->
+          args[0] instanceOf Event
 
     describe "event argument", ->
 
-      it "has a target - CheckboxSelect component"
+      it "has a target - CheckboxSelect component", ->
+        callback = sinon.spy()
 
-      it "has an originalTarget - changed checkbox element"
+        component = TestUtils.renderIntoDocument <CheckboxSelect
+          onChange = { callback }
+        >
+          <input type = 'checkbox' value = 'x' ref = 'x'/>
+          <input type = 'checkbox' value = 'y' ref = 'y'/>
+          <input type = 'checkbox' value = 'z' ref = 'z'/>
+        </CheckboxSelect>
 
-  #
-  #   # Works without JSDOM
-  #   el = <div>Hello</div>
-  #
-  #   expect el
-  #     .to.exist
-  #     .and.to.have.property "props"
-  #     .with.property        "children"
-  #     .that.eql             "Hello"
-  #
-  # it "can handle click event", ->
-  #   # Requires JSDOM setup
-  #   # TODO: use Sinon to spy on functions
-  #   callback = sinon.spy()
-  #
-  #   component = TestUtils.renderIntoDocument <ClickableButton onClick = { callback} />
-  #
-  #   TestUtils.Simulate.click React.findDOMNode component
-  #   expect callback
-  #     .to.have.been.called
+        input = React.findDOMNode component.refs.x
+        TestUtils.Simulate.click input
+
+        expect callback
+          .to.have.been.calledWithMatch (args) ->
+            args[0].target is component
+
+
+      it "has an originalTarget - changed checkbox element", ->
+        callback = sinon.spy()
+
+        component = TestUtils.renderIntoDocument <CheckboxSelect
+          onChange = { callback }
+        >
+          <input type = 'checkbox' value = 'x' ref = 'x'/>
+          <input type = 'checkbox' value = 'y' ref = 'y'/>
+          <input type = 'checkbox' value = 'z' ref = 'z'/>
+        </CheckboxSelect>
+
+        input = React.findDOMNode component.refs.x
+        TestUtils.Simulate.click input
+
+        expect callback
+          .to.have.been.calledWithMatch (args) ->
+            args[0].originalTarget is input
